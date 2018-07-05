@@ -1,18 +1,19 @@
 jobs:
-  client-lint:
-    name: 'Frontend: Lint'
-    run_when:
-      any branch is pushed: { type: branch, include_match: ^.*$ }
-    task_defaults: &TASK_DEFAULTS
-      environment_variables:
-        CI: 'true'
-      traits:
-        g2016: true
-    task:
-      scripts:
-        build:
-          timeout: 10 minutes
-          body: 'cd client && { npm ci || npm i ;} && npm run ci:lint'
+  # client-lint:
+  #   name: 'Frontend: Lint'
+  #   run_when:
+  #     any branch is pushed: { type: branch, include_match: ^.*$ }
+  #   task_defaults: &TASK_DEFAULTS
+  #     environment_variables:
+  #       CI: 'true'
+  #     traits:
+  #       g2016: true
+  #       ci-g2016-08: true # TMP
+  #   task:
+  #     scripts:
+  #       build:
+  #         timeout: 10 minutes
+  #         body: 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh" && nvm install 10 --latest-npm && cd client && { npm ci || npm i ;} && npm run ci:lint'
 
   client-build:
     name: 'Frontend: Build'
@@ -23,19 +24,29 @@ jobs:
         CI: 'true'
       traits:
         g2016: true
+        ci-g2016-08: true
     task:
       scripts:
+        prepare-nodejs:
+          body: 'source "${HOME}/.nvm/nvm.sh" && nvm install 10 --latest-npm'
+        npm-install:
+          timeout: 10 minutes
+          start_when:
+            nodejs prepared: { script_key: prepare-nodejs, states: [ passed ] }
+          body: 'source "${HOME}/.nvm/nvm.sh" && cd client && npm ci'
         build:
           timeout: 10 minutes
-          body: 'cd client && { npm ci || npm i ;} && npm run build'
+          start_when:
+            npm-installed: { script_key: npm-install, states: [ passed ] }
+          body: 'source "${HOME}/.nvm/nvm.sh" && cd client && npm run build'
 
-  client-specs:
-    name: 'Frontend: Tests'
-    run_when:
-      any branch is pushed: { type: branch, include_match: ^.*$ }
-    task_defaults: *TASK_DEFAULTS
-    task:
-      scripts:
-        jest:
-          timeout: 10 minutes
-          body: 'cd client && { npm ci || npm i ;} && npm test'
+  # client-specs:
+  #   name: 'Frontend: Tests'
+  #   run_when:
+  #     any branch is pushed: { type: branch, include_match: ^.*$ }
+  #   task_defaults: *TASK_DEFAULTS
+  #   task:
+  #     scripts:
+  #       jest:
+  #         timeout: 10 minutes
+  #         body: 'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh" && nvm install 10 --latest-npm && cd client && { npm ci || npm i ;} && npm test'
