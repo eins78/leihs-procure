@@ -219,9 +219,13 @@ export const FormField = ({
   if (!id) id = name
   if (!name) name = id
 
-  if (type === 'number-integer') {
-    type = 'number'
-    inputProps = { min: 1, step: 1, ...inputProps }
+  if (type === 'text') {
+    tag = InputText
+  }
+
+  if (type === 'text-static') {
+    tag = 'span'
+    mainClass = 'form-control-plaintext'
   }
 
   if (type === 'textarea') {
@@ -237,9 +241,9 @@ export const FormField = ({
     }
   }
 
-  if (type === 'text-static') {
-    tag = 'span'
-    mainClass = 'form-control-plaintext'
+  if (type === 'number-integer') {
+    type = 'number'
+    inputProps = { min: 1, step: 1, ...inputProps }
   }
 
   const inputAutoComplete =

@@ -186,8 +186,9 @@ Array [
         onKeyDown={[Function]}
         onKeyUp={[Function]}
         placeholder=""
+        readOnly={undefined}
         required={undefined}
-        value={null}
+        value=""
     />
 </div>,
   <hr />,
@@ -209,6 +210,7 @@ Array [
         onKeyDown={[Function]}
         onKeyUp={[Function]}
         placeholder=""
+        readOnly={undefined}
         required={undefined}
         value="10/26/1985"
     />
