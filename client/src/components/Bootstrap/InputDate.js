@@ -21,6 +21,45 @@ const parseDate = (str, format, locale) => {
 
 const defaultProps = { onChange: () => {} }
 
+// const DatePicker = ({
+//   name,
+//   value,
+//   required,
+//   readOnly,
+//   onChange,
+//   inputProps = {},
+//   ...dayPickerProps
+// }) => {
+//   const selectedDate = !value ? '' : DateTime.fromISO(value).toJSDate()
+//   console.log({ value, selectedDate })
+//   return (
+//     <DayPickerInput
+//       dayPickerProps={{
+//         selectedDays: selectedDate,
+//         month: selectedDate,
+//         ...dayPickerProps
+//       }}
+//       inputProps={{
+//         name,
+//         required,
+//         readOnly,
+//         ...inputProps,
+//         className: cx('form-control', inputProps.className),
+//         onChange: e => {
+//           console.log(e.target.value, parseDate(e.target.value))
+//         }
+//       }}
+//       value={!selectedDate ? '' : selectedDate}
+//       placeholder={''}
+//       formatDate={formatDate}
+//       parseDate={parseDate}
+//       onDayChange={day => {
+//         console.log({ day })
+//         onChange({ target: { value: day ? day.toISOString() : null, name } })
+//       }}
+//     />
+//   )
+// }
 const DatePicker = ({
   name,
   value,
@@ -29,25 +68,18 @@ const DatePicker = ({
   onChange,
   inputProps = {},
   ...dayPickerProps
-}) => (
-  <DayPickerInput
-    {...dayPickerProps}
-    inputProps={{
-      name,
-      required,
-      readOnly,
-      ...inputProps,
-      className: cx('form-control', inputProps.className)
-    }}
-    value={!value ? '' : DateTime.fromISO(value).toJSDate()}
-    placeholder={''}
-    formatDate={formatDate}
-    parseDate={parseDate}
-    onDayChange={day =>
-      onChange({ target: { value: day ? day.toISOString() : null, name } })
-    }
-  />
-)
+}) => {
+  return (
+    <DayPickerInput
+      value={value}
+      onDayChange={day => console.log(day)}
+      // onDayChange={day => {
+      //   console.log({ day })
+      //   onChange({ target: { value: day ? day.toISOString() : null, name } })
+      // }}
+    />
+  )
+}
 
 DatePicker.defaultProps = defaultProps
 

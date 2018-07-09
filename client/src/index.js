@@ -62,6 +62,8 @@ window.debugObj = obj => {
   console.debug(obj) // eslint-disable-line no-console
   return obj
 }
+
+window.isDebug = () => /\*|(app:)/.test(localStorage.debug)
 window.debug = () => {
   localStorage.debug = 'app:*'
 }
