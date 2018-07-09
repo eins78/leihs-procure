@@ -38,9 +38,9 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
       idPrefix={`request_form_${request.id}`}
       values={prepareFormValues(request)}
     >
-      {({ fields, ...formHelper }) => {
+      {({ fields, setValue, getValue, ...formHelpers }) => {
         const formPropsFor = key => ({
-          ...formHelper.formPropsFor(key),
+          ...formHelpers.formPropsFor(key),
           // add translated labels:
           label: t(`request_form_field.${key}`),
           // add readonly by field permissions
@@ -58,11 +58,13 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
           >
             <Row>
               <Col lg>
-                <FormField readOnly {...formPropsFor('article_name')} />
+                <FormField {...formPropsFor('article_name')} />
 
                 <FormField {...formPropsFor('article_number')} />
 
+                {/* FIXME: handle field ID vs String */}
                 <FormField {...formPropsFor('supplier')} />
+                <FormField {...formPropsFor('supplier_name')} />
 
                 <FormField {...formPropsFor('receiver')} />
 
@@ -82,25 +84,27 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                   />
                 </FormGroup>
 
-                <FormField type="textarea" {...formPropsFor('motivation')} />
+                <FormField
+                  type="textarea"
+                  minRows="5"
+                  {...formPropsFor('motivation')}
+                />
 
                 <Row>
                   <Col sm>
-                    <FormGroup label={t('request_form_field.request_priority')}>
+                    <FormGroup label={t('request_form_field.priority')}>
                       <Select
-                        {...formPropsFor('priority_requester')}
+                        {...formPropsFor('priority')}
                         options={CONSTANTS.requestPriorities.map(v => ({
                           value: v,
-                          label: t(
-                            `request_form_field.request_priority_label_${v}`
-                          )
+                          label: t(`request_form_field.priority_label_${v}`)
                         }))}
                       />
                     </FormGroup>
                   </Col>
                   <Col sm>
                     <FormGroup
-                      label={t('request_form_field.request_priority_inspector')}
+                      label={t('request_form_field.priority_inspector')}
                     >
                       <Select
                         {...formPropsFor('priority_inspector')}
@@ -108,7 +112,7 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                           v => ({
                             value: v,
                             label: t(
-                              `request_form_field.request_priority_inspector_label_${v}`
+                              `request_form_field.priority_inspector_label_${v}`
                             )
                           })
                         )}
@@ -134,12 +138,17 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                 <Row>
                   <Col sm="8">
                     <FormField
-                      {...formPropsFor('price')}
+                      {...formPropsFor('price_cents')}
+                      value={(getValue('price_cents') || 0) / 100}
+                      onChange={e =>
+                        setValue('price_cents', e.target.value * 100)
+                      }
                       type="number-integer"
                       labelSmall={t('request_form_field.price_help')}
                       helpText="Bitte nur ganze Zahlen eingeben"
                     />
                   </Col>
+
                   <Col sm="4">
                     <FormField
                       type="text-static"
@@ -154,22 +163,22 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                 <Row>
                   <Col sm>
                     <FormField
-                      {...formPropsFor('quantity_requested')}
+                      {...formPropsFor('requested_quantity')}
                       type="number-integer"
                     />
                   </Col>
                   <Col sm>
                     <FormField
-                      {...formPropsFor('quantity_approved')}
+                      {...formPropsFor('approved_quantity')}
                       type="number-integer"
-                      max={fields.quantity_requested}
+                      max={fields.requested_quantity}
                     />
                   </Col>
                   <Col sm>
                     <FormField
-                      {...formPropsFor('quantity_ordered')}
+                      {...formPropsFor('order_quantity')}
                       type="number-integer"
-                      max={fields.quantity_approved}
+                      max={fields.approved_quantity}
                     />
                   </Col>
                 </Row>
@@ -178,27 +187,27 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                   {...formPropsFor('inspection_comment')}
                   type="textarea"
                   beforeInput={
-                    <Select
-                      id="priority_requester"
-                      m="b-3"
-                      cls="form-control-sm"
-                      options={['foo', 'bar', 'baz'].map(s => ({
-                        value: s,
-                        label: s
-                      }))}
-                      disabled={formPropsFor('inspection_comment').readOnly}
-                      // NOTE: we dont want to keep the selected value and ust use it once.
-                      // Always setting empty value makes it controlled and React resets it for us!
-                      value={''}
-                      onChange={({ target: { value } }) => {
-                        formHelper.setValue(
-                          'inspection_comment',
-                          value +
-                            '\n' +
-                            formHelper.getValue('inspection_comment')
-                        )
-                      }}
-                    />
+                    !formPropsFor('inspection_comment').readOnly && (
+                      <Select
+                        id="priority_requester"
+                        m="b-3"
+                        cls="form-control-sm"
+                        options={['foo', 'bar', 'baz'].map(s => ({
+                          value: s,
+                          label: s
+                        }))}
+                        disabled={formPropsFor('inspection_comment').readOnly}
+                        // NOTE: we dont want to keep the selected value and ust use it once.
+                        // Always setting empty value makes it controlled and React resets it for us!
+                        value={''}
+                        onChange={({ target: { value } }) => {
+                          setValue(
+                            'inspection_comment',
+                            value + '\n' + getValue('inspection_comment')
+                          )
+                        }}
+                      />
+                    )
                   }
                 />
 
@@ -206,7 +215,6 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                   <FilePicker id="attachments" name="attachments" />
                 </FormGroup>
 
-                {/* FIXME: accounting_type
                 <FormGroup>
                   <ButtonRadio
                     {...formPropsFor('accounting_type')}
@@ -218,7 +226,17 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
                 </FormGroup>
 
                 {fields.accounting_type !== 'investment' ? (
-                  <FormField {...formPropsFor('cost_center')} />
+                  <Row>
+                    <Col>
+                      <FormField readOnly {...formPropsFor('cost_center')} />
+                    </Col>
+                    <Col>
+                      <FormField
+                        readOnly
+                        {...formPropsFor('procurement_account')}
+                      />
+                    </Col>
+                  </Row>
                 ) : (
                   <Row>
                     <Col sm>
@@ -227,13 +245,14 @@ const RequestForm = ({ request, className, onClose, onSubmit }) => {
 
                     <Col sm>
                       <FormField
-                        type="text-static"
+                        readOnly
                         value="123456789"
                         name="general_ledger_account"
+                        label="general_ledger_account"
                       />
                     </Col>
                   </Row>
-                )} */}
+                )}
               </Col>
             </Row>
 

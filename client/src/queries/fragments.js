@@ -38,13 +38,12 @@ export const RequestFieldsForIndex = gql`
       }
     }
 
-    # FIXME: price fields
-    # price_cents {
-    #   value
-    # }
-    # price_currency {
-    #   value
-    # }
+    price_cents {
+      value
+    }
+    price_currency {
+      value
+    }
 
     requested_quantity {
       value
@@ -65,10 +64,9 @@ export const RequestFieldsForIndex = gql`
     #   value
     # }
 
-    # FIXME: state
-    # state {
-    #   value
-    # }
+    state {
+      value
+    }
   }
 `
 
@@ -92,6 +90,14 @@ export const RequestFieldsForShow = gql`
       ...RequestFieldString
     }
     supplier {
+      read
+      write
+      value {
+        id
+        name
+      }
+    }
+    supplier_name {
       ...RequestFieldString
     }
     receiver {
@@ -103,13 +109,12 @@ export const RequestFieldsForShow = gql`
       }
     }
 
-    # FIXME: price fields
-    # price_cents {
-    #   ...RequestFieldString
-    # }
-    # price_currency {
-    #   ...RequestFieldString
-    # }
+    price_cents {
+      ...RequestFieldInt
+    }
+    price_currency {
+      ...RequestFieldString
+    }
 
     requested_quantity {
       ...RequestFieldInt
@@ -123,12 +128,12 @@ export const RequestFieldsForShow = gql`
 
     # FIXME: priority
     # priority {
-    #   ...RequestFieldString
+    #   ...RequestFieldInt
     # }
-    # FIXME: state
-    # state {
-    #   ...RequestFieldString
-    # }
+
+    state {
+      ...RequestFieldString
+    }
 
     article_number {
       ...RequestFieldString
@@ -137,10 +142,9 @@ export const RequestFieldsForShow = gql`
       ...RequestFieldString
     }
 
-    # FIXME: replacement
-    # replacement {
-    #   ...RequestFieldBoolean
-    # }
+    replacement {
+      ...RequestFieldBoolean
+    }
 
     room {
       read
@@ -158,20 +162,34 @@ export const RequestFieldsForShow = gql`
     inspection_comment {
       ...RequestFieldString
     }
-    # TODO: priority_inspector
+
+    # priority_inspector {
+    #   ...RequestFieldInt
+    # }
 
     # TODO: attachments
 
-    # FIXME: accounting_type
-    # accounting_type {
-    #   ...RequestFieldString
-    # }
-    # internal_order_id
+    accounting_type {
+      ...RequestFieldString
+    }
+    cost_center {
+      read
+      write
+      value
+    }
+    procurement_account {
+      read
+      write
+      value
+    }
+    internal_order_number {
+      ...RequestFieldString
+    }
   }
   ${RequestFieldsForIndex}
   ${RequestField.String}
   ${RequestField.Int}
-  #{RequestField.Boolean}
+  ${RequestField.Boolean}
 `
 
 export const RequesterOrg = gql`

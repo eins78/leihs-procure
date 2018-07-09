@@ -28,8 +28,8 @@ export const RequestTotalAmount = fields => {
     f.filter(
       ['requested', 'approved', 'ordered'].map(
         k =>
-          f.get(fields, [`quantity_${k}`, 'value']) ||
-          f.get(fields, [`quantity_${k}`])
+          f.get(fields, [`${k}_quantity`, 'value']) ||
+          f.get(fields, [`${k}_quantity`])
       )
     )
   )
