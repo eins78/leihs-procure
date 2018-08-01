@@ -141,7 +141,8 @@
       ; ===================================================================
       ; NOTE: this two wrappers have to be in this order as the first
       ; depends on the second (context: hanging of requests due to images)
-      ds/wrap-tx
+      ; ds/wrap-tx
+      ds/wrap-cheat-tx
       wrap-resolve-handler
       ; ===================================================================
       (wrap-graphiql {:path "/procure/graphiql", :endpoint "/procure/graphql"})

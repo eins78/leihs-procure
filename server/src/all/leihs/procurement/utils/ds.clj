@@ -106,6 +106,8 @@
          (.setMaxIdleTimeExcessConnections
            (or (:max-idle-time-exess-connections db-conf) (* 10 60))))}))
 
+(defn wrap-cheat-tx [handler] (fn [request] (handler (assoc request :tx @ds))))
+
 (defn wrap-tx
   [handler]
   (fn [request]
@@ -113,8 +115,8 @@
     ; there
     ; is a bug which leads to hanging of the server on all subsequent requests
     ; (let [ds (if (= (:handler-key request) :image) @ds-without-pooler @ds)]
-    ; 
-    ; FIXME: using ds without pooler for every handelr for the time being as 
+    ;
+    ; FIXME: using ds without pooler for every handelr for the time being as
     ; the problem with hanging server still persists
     (let [ds @ds-without-pooler]
       (jdbc/with-db-transaction
