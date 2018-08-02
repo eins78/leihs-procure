@@ -1,4 +1,30 @@
-import { RequestTotalAmount } from './decorators'
+import { DisplayName, RequestTotalAmount } from './decorators'
+
+describe.only('DisplayName', () => {
+  describe('type: User', () => {
+    const cases = [
+      [{ firstname: 'Hans', lastname: 'Meier' }, {}, 'Hans Meier'],
+      [{ firstname: 'Hans', lastname: 'Meier' }, { short: true }, 'H. Meier'],
+      [{ firstname: 'Hans', lastname: 'Meier' }, { abbr: true }, 'HM'],
+      // no firstname
+      [{ lastname: 'Meier' }, {}, 'Meier'],
+      [{ lastname: 'Meier' }, { short: true }, 'Meier'],
+      [{ lastname: 'Meier' }, { abbr: true }, 'M'],
+      // no lastname
+      [{ firstname: 'Hans' }, {}, 'Hans'],
+      [{ firstname: 'Hans' }, { short: true }, 'H.'],
+      [{ firstname: 'Hans' }, { abbr: true }, 'H']
+      // TODO: no name
+    ]
+
+    cases.forEach(([obj, opts, expected], i) =>
+      test(`case ${i + 1}`, () => {
+        const result = DisplayName({ ...obj, __typename: 'User' }, opts)
+        expect(result).toBe(expected)
+      })
+    )
+  })
+})
 
 describe('RequestTotalAmount', () => {
   const cases = [
@@ -94,6 +120,7 @@ describe('RequestTotalAmount', () => {
   ]
 
   cases.forEach(({ fields, result }, i) =>
-    test(`case ${i}`, () => expect(RequestTotalAmount(fields)).toEqual(result))
+    test(`case ${i + 1}`, () =>
+      expect(RequestTotalAmount(fields)).toEqual(result))
   )
 })
