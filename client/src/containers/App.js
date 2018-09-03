@@ -59,8 +59,8 @@ class App extends Component {
                     <F>
                       <MainNavWithRouter
                         isDev={isDev}
-                        me={UserWithShortcuts(data.current_user)}
-                        contactUrl={data.settings.contact_url}
+                        me={UserWithShortcuts(f.get(data, 'current_user'))}
+                        contactUrl={f.get(data, 'settings.contact_url')}
                       />
                       <div className="minh-100vh">
                         <FlashAlert {...f.get(location, 'state.flash')} />
