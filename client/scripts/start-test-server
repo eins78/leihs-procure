@@ -1,0 +1,8 @@
+#!/bin/sh
+
+{ npm ci || echo 'upgrade npm! `npm i -g npm@latest`' && clear ;}
+{ npm run build && clear ;}
+echo $(npx serve -s -p 15000 ./build && clear) &
+
+echo 'starting local proxy'
+npx micro-proxy -p 19000 -r proxy-test.json

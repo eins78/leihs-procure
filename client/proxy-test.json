@@ -1,0 +1,7 @@
+{
+  "rules": [
+    { "pathname": "/procure/graphql**", "dest": "http://localhost:10000" },
+    { "pathname": "/procure/images**", "dest": "http://localhost:10000" },
+    { "dest": "http://localhost:15000" }
+  ]
+}
