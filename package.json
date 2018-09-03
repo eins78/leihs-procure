@@ -1,0 +1,12 @@
+{
+  "name": "leihs-procurement",
+  "private": true,
+  "dependencies": {
+    "leihs-procurement-ui": "file:./client",
+    "serve": "9.1.0"
+  },
+  "scripts": {
+    "build-client": "cd client && npm ci && npm run -s build",
+    "start": "react-scripts start"
+  }
+}
