@@ -3,10 +3,10 @@
   "private": true,
   "dependencies": {
     "leihs-procurement-ui": "file:./client",
-    "serve": "9.1.0"
+    "serve": "^10.0.0"
   },
   "scripts": {
-    "build-client": "cd client && npm ci && npm run -s build",
+    "build-client": "cd client && npm ci --production && npm run -s build",
     "start": "react-scripts start"
   }
 }
