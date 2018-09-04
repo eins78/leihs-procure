@@ -192,13 +192,12 @@ const Icons = f.fromPairs(
         }
       )
       return (
-        <React.Fragment>
-          <FontAwesomeIcon
-            {...iconProps}
-            icon={src}
-            className={iconClassName}
-          />
-        </React.Fragment>
+        <FontAwesomeIcon
+          {...iconProps}
+          icon={src}
+          className={iconClassName}
+          data-hook-icon-name={name}
+        />
       )
     }
     iconComponent.displayName = `Icon.${name}`

@@ -8,3 +8,11 @@ export DATABASE_URL="${DATABASE_URL:-postgresql://localhost:5432/leihs_test_proc
 export LEIHS_DATABASE_URL="jdbc:${DATABASE_URL}"
 # auto find some open port
 export LEIHS_HTTP_BASE_URL="${LEIHS_HTTP_BASE_URL:-http://localhost:$(get_open_port)}"
+
+true '!!!'
+true '!!!'
+true '!!!'
+true '!!!  NOTE: THIS WILL ONLY WORK IF THE SCRIPT IS SOURCED!!!'
+true '!!!  `source ./scripts/setup-test-env`'
+true '!!!'
+true '!!!'
