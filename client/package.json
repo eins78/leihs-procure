@@ -7,9 +7,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "npm run -s build:lib && npm run -s build:app",
+    "build": "npm run -s build:ui && npm run -s build:app",
     "build:app": "react-scripts build",
-    "build:lib": "cd leihs-ui && npm run -s build && npm run -s build-lib",
+    "build:ui": "cd leihs-ui && npm run -s build",
     "postinstall": "cd leihs-ui && { npm ci || npm i ;}",
     "analyze": "source-map-explorer build/static/js/main.*",
     "analyze-build": "npm run -s build && npm run -s analyze",
