@@ -10,7 +10,7 @@
     "build": "npm run -s build:ui && npm run -s build:app",
     "build:app": "react-scripts build",
     "build:ui": "cd leihs-ui && npm run -s build",
-    "preinstall": "cd leihs-ui && { test -d node_modules && npm i || { npm ci || npm i ;} ;}",
+    "XXXpreinstall": "cd leihs-ui && { test -d node_modules && npm i || { npm ci || npm i ;} ;}",
     "postinstall": "npm run -s cleanup-typescript",
     "cleanup-typescript": "find . -name '*.ts' -delete",
     "analyze": "source-map-explorer build/static/js/main.*",
@@ -70,7 +70,8 @@
     "reactstrap": "^6.5.0",
     "source-map-explorer": "git+https://github.com/danvk/source-map-explorer.git#b74f718",
     "tachyons-type-scale": "^6.1.1",
-    "xlsx": "^0.14.1"
+    "xlsx": "^0.14.1",
+    "leihs-ui": "file:./leihs-ui"
   },
   "prettier": {
     "printWidth": 80,
