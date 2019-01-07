@@ -20,7 +20,7 @@
     "ci:lint:json": "prettier --list-different 'src/{,**/}*.json'",
     "test": "react-scripts test --env=jsdom"
   },
-  "proxy": {
+  "XXXproxy": {
     "/(graphql|graphiql|images|attachments|status|upload|sign-out|sign-in)": {
       "target": "http://localhost:3230"
     },
@@ -114,5 +114,11 @@
         }
       }
     ]
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
