@@ -1,5 +1,6 @@
 (ns leihs.procurement.authorization
-  (:require [leihs.procurement.env :as env]
+  (:require [clojure.tools.logging :as log]
+            [leihs.procurement.env :as env]
             [leihs.procurement.permissions.user :as user-perms]
             [leihs.procurement.graphql.helpers :as helpers])
   (:import leihs.procurement.UnauthorizedException))
@@ -50,7 +51,11 @@
                          #(check context args value))))
 
 (def skip-authorization-handler-keys
-  [[:attachment #{:dev :test}] [:image #{:dev :test}] :status
+  [[:attachment #{:dev :test}]
+   :frontend
+   [:image #{:dev :test}]
+   :sign-in
+   :status
    [:upload #{:dev :test}]])
 
 (defn- skip?

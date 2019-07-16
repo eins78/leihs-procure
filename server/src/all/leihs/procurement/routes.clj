@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [str keyword])
   (:require
     [leihs.core.http-cache-buster2 :as cache-buster :refer [wrap-resource]]
-
     [bidi.bidi :as bidi]
     [cheshire.core :refer [parse-string]]
     [clojure.tools.logging :as log]
@@ -10,10 +9,11 @@
      [env :as env] [graphql :as graphql] [paths :refer [paths]]
      [status :as status]]
     [leihs.core.anti-csrf.back :as anti-csrf]
+    [leihs.core.auth.session :as session]
     [leihs.core.locale :as locale]
+    [leihs.core.routes :as core-routes]
     [leihs.core.sign-out.back :as sign-out]
     [leihs.procurement.paths :refer [path paths]]
-    [leihs.procurement.auth.session :as session]
     [leihs.procurement.backend.html :as html]
     [leihs.procurement.resources [attachment :as attachment] [image :as image]
      [upload :as upload]]
@@ -27,22 +27,20 @@
      [multipart-params :refer [wrap-multipart-params]]
      [params :refer [wrap-params]] [reload :refer [wrap-reload]]]
     [ring.util.response :refer [redirect]]
-
     [clojure.tools.logging :as logging]
     [logbug.debug :as debug :refer [I>]]
-    [logbug.ring :refer [wrap-handler-with-logging]]
-    ))
+    [logbug.ring :refer [wrap-handler-with-logging]]))
 
 (declare redirect-to-root-handler)
 
 (def handler-resolve-table
-  {:attachment attachment/routes
-   :upload upload/routes
-   :graphql graphql/handler
-   :image image/routes
-   :not-found html/not-found-handler
-   :sign-out sign-out/ring-handler
-   :status status/routes})
+  (merge core-routes/resolve-table
+         {:attachment attachment/routes,
+          :upload upload/routes,
+          :graphql graphql/handler,
+          :image image/routes,
+          :not-found html/not-found-handler,
+          :status status/routes}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -67,35 +65,28 @@
 (defn- match-pair-with-fallback
   [path]
   (let [matched-pair (bidi/match-pair paths {:remainder path, :route paths})]
-    (if
-      (->
-        matched-pair
-        :handler
-        (= :not-found))
+    (if (-> matched-pair
+            :handler
+            (= :not-found))
       (bidi/match-pair paths {:remainder path, :route paths})
       matched-pair)))
 
 (defn wrap-resolve-handler
   ([handler] (fn [request] (wrap-resolve-handler handler request)))
   ([handler request]
-   (let [path
-           (or
-             (->
-               request
-               :path-info
-               presence)
-             (->
-               request
-               :uri
-               presence))
+   (let [path (or (-> request
+                      :path-info
+                      presence)
+                  (-> request
+                      :uri
+                      presence))
          {route-params :route-params, handler-key :handler}
            (match-pair-with-fallback path)
          handler-fn (handler-resolver handler-key)]
-     (handler
-       (assoc request
-         :route-params route-params
-         :handler-key handler-key
-         :handler handler-fn)))))
+     (handler (assoc request
+                :route-params route-params
+                :handler-key handler-key
+                :handler handler-fn)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -103,22 +94,18 @@
   [params]
   (if-not (map? params)
     params
-    (->>
-      params
-      (map
-        (fn [[k v]]
-          [(keyword k) (try (parse-string v true) (catch Exception _ v))]))
-      (into {}))))
+    (->> params
+         (map (fn [[k v]] [(keyword k)
+                           (try (parse-string v true) (catch Exception _ v))]))
+         (into {}))))
 
 (defn wrap-canonicalize-params-maps
   [handler]
   (fn [request]
-    (handler
-      (->
-        request
-        (update-in [:params] canonicalize-params-map)
-        (update-in [:query-params] canonicalize-params-map)
-        (update-in [:form-params] canonicalize-params-map)))))
+    (handler (-> request
+                 (update-in [:params] canonicalize-params-map)
+                 (update-in [:query-params] canonicalize-params-map)
+                 (update-in [:form-params] canonicalize-params-map)))))
 
 (defn wrap-empty [handler] (fn [request] (or (handler request) {:status 404})))
 
@@ -133,35 +120,35 @@
   (cond-> handler
     (#{:dev :test} env/env) (wrap-reload {:dirs ["src" "resources"]})))
 
-(defn wrap-dispatch-frontent 
-  ([handler]
-   (fn [request]
-     (wrap-dispatch-frontent handler request)))
+(defn wrap-dispatch-frontend
+  ([handler] (fn [request] (wrap-dispatch-frontend handler request)))
   ([handler request]
-   (logging/debug 'wrap-dispatch-frontent request)
-   (if (and 
-         (:handler-key request)
-         (= :html (-> request :accept :mime))
-         ; some extra logic: when it comes to js browsers don't set the accept header properly
-         (not (re-matches #".*\.js$" (:uri request))))
-     (let [frontent-request (assoc request 
-                                   :uri "/procure/index.html"
-                                   :handler-key nil
-                                   :handler nil)]
-       (logging/debug 'frontent-request frontent-request)
-       (handler frontent-request))
+   (logging/debug 'wrap-dispatch-frontend request)
+   (if (and (:handler-key request)
+            (= :html
+               (-> request
+                   :accept
+                   :mime))
+            ; some extra logic: when it comes to js browsers don't set the accept header properly
+            (not (re-matches #".*\.js$" (:uri request))))
+     (let [frontend-request (assoc request
+                              :uri "/procure/index.html"
+                              :handler-key nil
+                              :handler nil)]
+       (logging/debug 'frontend-request frontend-request)
+       (handler frontend-request))
      (handler request))))
 
-(defn wrap-accept [handler]
+(defn wrap-accept
+  [handler]
   (ring.middleware.accept/wrap-accept
     handler
-    {:mime
-     ["application/json" :qs 1 :as :json
-      "application/javascript" :qs 1 :as :javascript
-      "image/apng" :qs 1 :as :apng
-      "image/*" :qs 1 :as :image
-      "text/css" :qs 1 :as :css
-      "text/html" :qs 1 :as :html]}))
+    {:mime ["application/json" :qs 1 :as :json
+            "application/javascript" :qs 1 :as :javascript
+            "image/apng" :qs 1 :as :apng
+            "image/*" :qs 1 :as :image
+            "text/css" :qs 1 :as :css
+            "text/html" :qs 1 :as :html]}))
 
 (defn init
   [secret]
@@ -171,7 +158,7 @@
       locale/wrap
       wrap-authorize
       wrap-authenticate
-      session/wrap
+      session/wrap-authenticate
       wrap-cookies
       wrap-json-response
       (wrap-json-body {:keywords? true})
@@ -183,12 +170,12 @@
       wrap-params
       wrap-multipart-params
       wrap-content-type
-      (wrap-resource
-        "public" {:allow-symlinks? true
-                  :cache-bust-paths []
-                  :never-expire-paths []
-                  :cache-enabled? true})
-      wrap-dispatch-frontent
+      (wrap-resource "public"
+                     {:allow-symlinks? true,
+                      :cache-bust-paths [],
+                      :never-expire-paths [],
+                      :cache-enabled? true})
+      wrap-dispatch-frontend
       wrap-resolve-handler
       wrap-accept
       ring-exception/wrap
