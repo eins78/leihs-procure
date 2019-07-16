@@ -175,7 +175,7 @@
                       :cache-bust-paths [],
                       :never-expire-paths [],
                       :cache-enabled? true})
-      wrap-dispatch-frontend
+      ; wrap-dispatch-frontend
       wrap-resolve-handler
       wrap-accept
       ring-exception/wrap
