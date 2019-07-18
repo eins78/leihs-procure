@@ -156,7 +156,7 @@
       dispatch-to-handler
       anti-csrf/wrap
       locale/wrap
-      wrap-authorize
+      ; wrap-authorize
       wrap-authenticate
       session/wrap-authenticate
       wrap-cookies
