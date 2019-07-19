@@ -1,9 +1,10 @@
 (ns leihs.procurement.routes
-  (:refer-clojure :exclude [str keyword])
+  (:refer-clojure :exclude [str keyword replace])
   (:require
     [leihs.core.http-cache-buster2 :as cache-buster :refer [wrap-resource]]
     [bidi.bidi :as bidi]
     [cheshire.core :refer [parse-string]]
+    [clojure.string :refer [starts-with? replace]]
     [clojure.tools.logging :as log]
     [leihs.procurement [authorization :refer [wrap-authenticate wrap-authorize]]
      [env :as env] [graphql :as graphql] [paths :refer [paths]]
@@ -115,24 +116,29 @@
   [handler secret]
   (fn [request] (handler (assoc request :secret-ba (.getBytes secret)))))
 
-(defn wrap-reload-if-dev-or-test
+(defn wrap-rewrite-uri-for-static-paths
   [handler]
-  (cond-> handler
-    (#{:dev :test} env/env) (wrap-reload {:dirs ["src" "resources"]})))
+  (fn [request]
+    (if (= (:handler-key request) :not-found)
+      (let [uri (:uri request)
+            new-uri (some (fn [[s1 s2]]
+                            (and (starts-with? uri s1) (replace uri s1 s2)))
+                          {"/procure/static" "/procure/client/static",
+                           "/" "/procure/client/"})]
+        (if new-uri (handler (assoc request :uri new-uri)) (handler request)))
+      (handler request))))
 
-(defn wrap-dispatch-frontend
-  ([handler] (fn [request] (wrap-dispatch-frontend handler request)))
+(defn wrap-dispatch-root-html
+  ([handler] (fn [request] (wrap-dispatch-root-html handler request)))
   ([handler request]
-   (logging/debug 'wrap-dispatch-frontend request)
-   (if (and (:handler-key request)
+   (logging/debug 'wrap-dispatch-root-html request)
+   (if (and (= (:handler-key request) :home)
             (= :html
                (-> request
                    :accept
-                   :mime))
-            ; some extra logic: when it comes to js browsers don't set the accept header properly
-            (not (re-matches #".*\.js$" (:uri request))))
+                   :mime)))
      (let [frontend-request (assoc request
-                              :uri "/procure/index.html"
+                              :uri "/procure/client/index.html"
                               :handler-key nil
                               :handler nil)]
        (logging/debug 'frontend-request frontend-request)
@@ -156,7 +162,7 @@
       dispatch-to-handler
       anti-csrf/wrap
       locale/wrap
-      ; wrap-authorize
+      wrap-authorize
       wrap-authenticate
       session/wrap-authenticate
       wrap-cookies
@@ -175,14 +181,14 @@
                       :cache-bust-paths [],
                       :never-expire-paths [],
                       :cache-enabled? true})
-      ; wrap-dispatch-frontend
+      wrap-rewrite-uri-for-static-paths
+      wrap-dispatch-root-html
       wrap-resolve-handler
       wrap-accept
-      ring-exception/wrap
-      wrap-reload-if-dev-or-test))
+      ring-exception/wrap))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
 ; (logging-config/set-logger! :level :info)
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
-;(debug/debug-ns *ns*)
+; (debug/debug-ns *ns*)
