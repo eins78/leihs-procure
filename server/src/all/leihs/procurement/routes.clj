@@ -13,6 +13,7 @@
     [leihs.core.auth.session :as session]
     [leihs.core.locale :as locale]
     [leihs.core.routes :as core-routes]
+    [leihs.core.routing.back :as core-routing]
     [leihs.core.sign-out.back :as sign-out]
     [leihs.procurement.paths :refer [path paths]]
     [leihs.procurement.backend.html :as html]
@@ -91,23 +92,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn canonicalize-params-map
-  [params]
-  (if-not (map? params)
-    params
-    (->> params
-         (map (fn [[k v]] [(keyword k)
-                           (try (parse-string v true) (catch Exception _ v))]))
-         (into {}))))
-
-(defn wrap-canonicalize-params-maps
-  [handler]
-  (fn [request]
-    (handler (-> request
-                 (update-in [:params] canonicalize-params-map)
-                 (update-in [:query-params] canonicalize-params-map)
-                 (update-in [:form-params] canonicalize-params-map)))))
-
 (defn wrap-empty [handler] (fn [request] (or (handler request) {:status 404})))
 
 (defn wrap-secret-byte-array
@@ -119,12 +103,19 @@
 (defn wrap-rewrite-uri-for-static-paths
   [handler]
   (fn [request]
-    (if (= (:handler-key request) :not-found)
+    (if (and (= (:handler-key request) :not-found))
       (let [uri (:uri request)
-            new-uri (some (fn [[s1 s2]]
-                            (and (starts-with? uri s1) (replace uri s1 s2)))
-                          {"/procure/static" "/procure/client/static",
-                           "/" "/procure/client/"})]
+            new-uri
+              (some
+                (fn [[s1 s2]] (and (starts-with? uri s1) (replace uri s1 s2)))
+                {"/procure/static" "/procure/client/static",
+                 "/procure/theme" "/procure/theme",
+                 "/procure/favicon.ico" "/procure/client/favicon.ico",
+                 "/procure/manifest.json" "/procure/client/manifest.json",
+                 ; "/procure/leihs-shared-bundle.js" "/procure/leihs-shared-bundle.js"
+                 ; "/favicon.ico" "/procure/client/favicon.ico"
+                 ; "/manifest.json" "/procure/client/manifest.json"
+                 })]
         (if new-uri (handler (assoc request :uri new-uri)) (handler request)))
       (handler request))))
 
@@ -172,7 +163,7 @@
       (wrap-secret-byte-array secret)
       datasource/wrap
       (wrap-graphiql {:path "/procure/graphiql", :endpoint "/procure/graphql"})
-      wrap-canonicalize-params-maps
+      core-routing/wrap-canonicalize-params-maps
       wrap-params
       wrap-multipart-params
       wrap-content-type
