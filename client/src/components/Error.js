@@ -83,7 +83,7 @@ export const ErrorPanel = ({ error, data, errorDetails }) => {
         <JsonDetails title={t('errors.data_details')} error={data} />
       )}
 
-      <p className="text-muted mb-0">
+      <div className="text-muted mb-0">
         <small>
           <samp>
             {new Date().toJSON()}
@@ -95,7 +95,7 @@ export const ErrorPanel = ({ error, data, errorDetails }) => {
             {browserLine}
           </samp>
         </small>
-      </p>
+      </div>
     </div>
   )
 }
