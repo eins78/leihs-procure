@@ -1,0 +1,14 @@
+#!/bin/sh -exu
+
+# run app more or less like in prod, but locally.
+# mainly used to debug integrtion tests.
+
+cd ./client
+export PUBLIC_URL='/procure'
+npm ci
+npm run build
+
+cd -
+
+cd ./server
+./scripts/start-dev-server
