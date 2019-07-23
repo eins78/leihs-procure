@@ -126,7 +126,12 @@ const ErrorHandler = ({ error, data, refetch }) => {
     )
   }
 
-  // FIXME: handle 401 when backend is fixed, all-in-1 msg for now:
+  // NOT LOGGED IN AT ALL
+  if (errCode === 'NOT_AUTHENTICATED') {
+    return <p>ANMELDEN ^</p>
+  }
+
+  // LOGGED IN BUT NOT ALLOWED
   if (errCode === 'NOT_AUTHORIZED_FOR_APP') {
     return (
       <FatalErrorScreen error={error}>
