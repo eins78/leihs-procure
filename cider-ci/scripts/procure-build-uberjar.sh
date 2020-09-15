@@ -12,3 +12,5 @@ function build_uberjar() {
   export LEIN_SNAPSHOTS_IN_RELEASE=yes
   lein uberjar
 }
+
+build_uberjar

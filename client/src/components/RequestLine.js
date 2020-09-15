@@ -9,6 +9,8 @@ import Icon from './Icons'
 import RequestStateBadge from './RequestStateBadge'
 import RequestEdit from '../containers/RequestEdit'
 
+const SOFT_BREAK = '​'
+
 class RequestLine extends React.Component {
   state = {
     open: false
@@ -74,6 +76,31 @@ export default RequestLine
 
 export const RequestLineClosed = ({ request, onClick, className }) => (
   <Row className={cx('py-3 mx-0', className)} onClick={onClick}>
+    <Col sm="1">
+      {/* <samp>
+        {request.short_id ||
+          `${request.budget_period.value.name}.${Math.ceil(
+            Math.random() * 250
+          )}`}
+      </samp> */}
+      <samp>
+        {(
+          request.short_id ||
+          `${request.budget_period.value.name}.${Math.ceil(
+            Math.random() * 250
+          )}`
+        )
+          .split('.')
+          .map((str, i, a) => (
+            <span key={i}>
+              <span>{str}</span>
+              {i < a.length - 1 && '.'}
+              <span style={{ userSelect: 'none' }}>{SOFT_BREAK}</span>
+            </span>
+          ))}
+      </samp>
+    </Col>
+
     <Col sm="2">
       {request.article_name.value || DisplayName(request.model.value)}
     </Col>
@@ -101,7 +128,7 @@ export const RequestLineClosed = ({ request, onClick, className }) => (
       </Tooltipped>
     </Col>
 
-    <Col sm="3" className="align-self-center">
+    <Col sm="2" className="align-self-center">
       <Tooltipped text={t('request_form_field.price_cents')}>
         <Badge secondary cls="mr-1" id={`price_cents_tt_${request.id}`}>
           <Icon.PriceTag className="mr-1" />

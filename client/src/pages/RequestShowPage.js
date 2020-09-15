@@ -14,7 +14,12 @@ const RequestShowPage = () => (
   <Routed>
     {({ match }) => (
       <div className="p-3" style={{ maxWidth: '100rem', margin: '0 auto' }}>
-        <h1>Antrag</h1>
+        <h1>
+          Antrag{' '}
+          <small className="text-muted">
+            <samp>#{`2020.${Math.ceil(Math.random() * 250)}`}</samp>
+          </small>
+        </h1>
         <RequestEdit requestId={match.params.id} withHeader />
       </div>
     )}

@@ -254,6 +254,7 @@
                  :requested_quantity {:type :RequestFieldInt},
                  :room {:type :RequestFieldRoom},
                  :state {:type (non-null :State)},
+                 :short_id {:type String},
                  :supplier {:type :RequestFieldSupplier},
                  :supplier_name {:type :RequestFieldString},
                  :template {:type :RequestFieldTemplate},
